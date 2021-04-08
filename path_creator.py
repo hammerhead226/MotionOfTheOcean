@@ -193,7 +193,7 @@ def update():
     # Plot slowpoints
     slowpoints_plot.set_xdata([slowpoint[0] for slowpoint in slowpoints])
     slowpoints_plot.set_ydata([slowpoint[1] for slowpoint in slowpoints])
-    param_locations[3] = slowpoints
+    param_locations[4] = slowpoints
 
     # Redraw plot
     plt.gcf().canvas.draw_idle()

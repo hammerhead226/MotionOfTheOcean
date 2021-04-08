@@ -7,19 +7,6 @@ import math
 import statistics
 
 
-def mean_filter(ss, data):
-    hss = int(ss / 2)
-    maa_data = []
-    for i in range(hss):
-        maa_data.append(data[i])
-    for i in range(ss, ss * int((len(data) + hss + 1) / ss), ss):
-        for j in range(ss):
-            maa_data.append(statistics.mean(data[i - hss:i + hss]))
-    for i in range(ss * int((len(data) + hss + 1) / ss) - hss, len(data)):
-        maa_data.append(data[i])
-    return maa_data
-
-
 def get_intermediate(index, list):
     fractional = index - int(index)
     return (1.0 - fractional) * list[int(index)] + fractional * list[int(index) + 1]
@@ -84,7 +71,6 @@ for curvature in curvatures:
         max_curvature_velocities.append(max_velocity)
     else:
         max_curvature_velocities.append(min(max_velocity, math.sqrt(abs(max_centripetal_acceleration / curvature))))
-# max_curvature_velocities = mean_filter(20, max_curvature_velocities)
 
 # Compute distance and angle change between points
 d_distances = []
@@ -104,12 +90,21 @@ for d_distance, d_theta, heading in zip(d_distances, d_thetas, headings):
         current_max_velocity = temp_max_velocity if temp_max_velocity < current_max_velocity else current_max_velocity
     max_rotate_velocities.append(current_max_velocity)
 
-# max_rotate_velocities = mean_filter(20, max_rotate_velocities)
-
 # Compute maximum overall velocity
 max_velocities = []
 for max_rotate_velocity, max_curvature_velocity in zip(max_rotate_velocities, max_curvature_velocities):
     max_velocities.append(min(max_rotate_velocity, max_curvature_velocity))
+
+# Add slowpoints to velocity maximum velocity profile
+for slowpoint in slowpoints:
+    min_d = float('inf')
+    index = None
+    for i in range(len(max_velocities)):
+        d = math.hypot(positions[i][0] - slowpoint[0], positions[i][1] - slowpoint[1])
+        if d < min_d:
+            min_d = d
+            index = i
+    max_velocities[index] = min_velocity
 
 # Shift max velocities by half a point
 shifted_max_velocities = [max_velocities[0]]
@@ -163,6 +158,24 @@ while i < len(positions) - 2:
     if not broke:
         i = i + 1
         sped_positions.append([get_intermediate(i, positions_x), get_intermediate(i, positions_y), get_intermediate(i, positions_theta)])
+
+# Add commands to output
+command_positions = {}
+for command in commands:
+    min_d = float('inf')
+    index = None
+    for i in range(len(sped_positions)):
+        d = math.hypot(command[0] - sped_positions[i][0], command[1] - sped_positions[i][1])
+        if d < min_d:
+            min_d = d
+            index = i
+    if index in command_positions.keys():
+        command_positions[index] = command_positions[index] + '#' + command[2]
+    else:
+        command_positions[index] = command[2]
+for i in range(len(sped_positions)):
+    if i in command_positions.keys():
+        sped_positions[i].append(command_positions[i])
 
 sped_path_to_follow_file = open(sped_path_to_follow_file_name, 'w')
 for sped_position in sped_positions:
