@@ -157,14 +157,17 @@ public class MotionOfTheOcean {
          * @param toPose Runnable of the robot's toPose method
          */
         public static void executeRecording(Runnable toPose) {
-            toPose.run();
+            boolean runDrivetrain = true;
+
             for (String command : getState().getCommands()) {
+                System.out.println(command);
                 Runnable runnable;
+                if(command.charAt(0) == '!') runDrivetrain = false;
                 if ((runnable = usableCommands.get(command)) != null) {
                     runnable.run();
                 }
             }
-
+            if(runDrivetrain) toPose.run();
             if (hasNextState()) executorIndex++;
         }
 
