@@ -1,5 +1,5 @@
-# MotionOfTheOcean
-Motion of the Ocean, a universal autonomous recording and execution program
+# Holonomic Path Planner
+Holonomic Path Planner, a universal autonomous recording and execution program
 
 path_creator.py: python path_creator.py robot_radius module_position_offsets template_path edited_path
 so for example, if we had 4 swerve modules a distance 1.328 feet from the center of the robot, positioned at offsets .830 rad, 2.312 rad, 3.971 rad, and 5.453 rad and a template_path called recording.csv and an edited_path file name of edit_recording.csv, the command to be called would be
